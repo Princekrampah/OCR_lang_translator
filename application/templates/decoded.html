@@ -1,0 +1,53 @@
+{% extends 'layout.html' %}
+{% block content %}
+<div class="mt-4">
+    <div class="card card-style mb-2">
+        <div class="card-body justify-content-center">
+            <p>Language is: {{ lang }}</p>
+            <form action="" method="POST">
+                {{ form.csrf_token() }}
+                <fieldset class="form-group">
+                    <legend class="mb-4">Generate QRCode</legend>
+                    <div class="form-group">
+                        {{ form.data_field.label(class="form-control-label") }}
+                        {% if form.data_field.errors %}
+                            {{ form.data_field(class="form-control form-control-sm is-invalid") }}
+                        {% for error in form.data_field.errors %}
+                        <div class="invalid-feedback">
+                            <span>{{error}}</span>
+                        </div>
+                        {% endfor %}
+                        {% else %}
+                            {{ form.data_field(class="form-control form-control-sm") }}
+                        {% endif %}
+                    </div>
+
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <label class="input-group-text" for="inputGroupSelect01">Language To Translate To</label>
+                        </div>
+                            {{ form.language(class="custom-select") }}
+                    </div>
+
+                    <div class="form-group border-bottom pb-3 mt-4">
+                        {{ form.submit(class="btn btn-outline-info" )}}
+                    </div>
+                </fieldset>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById("submit").addEventListener("click", function () {
+        swal({
+            title: "File upload in process",
+            text: "Please wait... this can take sometime",
+            icon: "success",
+            button: "Okay",
+        });
+    });
+</script>
+
+{% endblock %}
+

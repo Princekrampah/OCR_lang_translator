@@ -1,0 +1,11 @@
+{% extends 'layout.html' %}
+{% block content %}
+<div class="d-flex justify-content-center mt-4">
+    <audio controls autoplay class="m-auto">
+        <source src="horse.ogg" type="audio/ogg">
+        <source src="{{ url_for('static', filename='audio_files/' + file) }}" type="audio/mpeg">
+        Your browser does not support the audio.
+    </audio>
+</div>
+
+{% endblock %}
