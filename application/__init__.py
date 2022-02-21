@@ -1,10 +1,16 @@
 from flask import Flask
 import os
 from flask_dropzone import Dropzone
+from flask_session import Session
 
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = "JLK24JO3I@!!$#Yoiouoln!#@oo=5y9y9youjuy952ou9859u923kjfhiy23ho"
+
+# Sessions 
+SESSION_TYPE = 'filesystem'
+app.config.from_object(__name__)
+Session(app)
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 

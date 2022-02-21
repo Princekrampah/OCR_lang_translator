@@ -1,7 +1,5 @@
-from crypt import methods
-from ctypes import util
 from application import app, dropzone
-from flask import render_template, request, redirect, url_for
+from flask import render_template, request, redirect, url_for, session
 from .forms import QRCodeData
 import secrets
 import os
@@ -17,8 +15,6 @@ from gtts import gTTS
 # import utils
 from . import utils
 
-sentence = ""
-
 
 @app.route("/")
 def index():
@@ -29,9 +25,9 @@ def index():
 def upload():
     if request.method == 'POST':
 
-        # file processing
-        global sentence
-
+        # set a session value
+        sentence = ""
+        
         f = request.files.get('file')
         filename, extension = f.filename.split(".")
         generated_filename = secrets.token_hex(10) + f".{extension}"
@@ -53,8 +49,6 @@ def upload():
         boxes = pytesseract.image_to_data(img)
         # print(boxes)
     
-
-
         for i, box in enumerate(boxes.splitlines()):
             if i == 0:
                 continue
@@ -67,9 +61,12 @@ def upload():
                 sentence += box[11] + " "
        
         # print(sentence)
+        session["sentence"] = sentence
 
         # delete file after you are done working with it
         os.remove(file_location)
+
+        return redirect("/decoded/")
 
     else:
        return render_template("upload.html", title="Home")
@@ -77,7 +74,14 @@ def upload():
 
 @app.route("/decoded", methods=["GET", "POST"])
 def decoded():
-    global sentence
+
+    sentence = session.get("sentence")
+    # print(sentence)
+
+    # print(lang)
+    lang, _ = utils.detect_language(sentence)
+    # print(lang, conf)
+    
 
     form =QRCodeData() 
 
@@ -102,37 +106,32 @@ def decoded():
         # save file as audio
         tts.save(file_location)
 
-        return redirect("/audio_download/" + generated_audio_filename)
+        # return redirect("/audio_download/" + generated_audio_filename)
+
+        form.data_field.data = translated_text
+
+        return render_template("decoded.html", 
+                        title="Decoded", 
+                        form=form, 
+                        lang=utils.languages.get(lang),
+                        audio = True,
+                        file = generated_audio_filename
+                    )
 
 
+    # form.data_field.data = sentence
     form.data_field.data = sentence
 
-    # print(lang)
-    lang, _ = utils.detect_language(sentence)
-    # print(lang, conf)
-
     # set the sentence back to defautl blank
-    sentence = ""
+    # sentence = ""
+    session["sentence"] = ""
 
     return render_template("decoded.html", 
                             title="Decoded", 
                             form=form, 
-                            lang=utils.languages.get(lang)
+                            lang=utils.languages.get(lang),
+                            audio = False
                         )
 
 
-@app.route("/audio_download/<string:file_name>", methods=["GET"])
-def audio_file_download(file_name):
-    print(file_name)
-
-    file_location = os.path.join(
-                    app.config['AUDIO_FILE_UPLOAD'], 
-                    file_name
-            )
-
-
-    return render_template("audio_download.html", 
-                            title="audio downlaod", 
-                            file = file_name
-                        )
 
